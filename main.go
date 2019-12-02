@@ -98,22 +98,12 @@ func startScan(ip string, port int, storage string, label string) {
 }
 
 func main() {
-	/*
-			go build -o scanner .
-			./scanner  -port=9200    // required
-		               -label=elasticSearch    // required
-		               -storage=http://0.0.0.0:8080/portscanner/create    // optional
-		               -first-block=35    			 // optional
-		               -second-block=193 			 // optional
-		               -third-block=104  			 // optional
-		               -scan-size=50     			 // optional
-	*/
 	blocks := []int{0, 0, 0, 0}
 
 	port := flag.Int("port", 8080, "scan port")
 	label := flag.String("label", "UnknownService", "ElasticSearch/Redis/Mongodb etc...")
 	storage := flag.String("storage", "csv", "notification url or csv")
-	scanSize := flag.Int("scan-size", 50, "concurrent count")
+	concurrentCount := flag.Int("concurrent-count", 50, "concurrent count")
 
 	firstBlock := flag.Int("first-block", 0, "ip address first block")
 	secondBlock := flag.Int("second-block", 0, "ip address second block")
@@ -143,7 +133,7 @@ func main() {
 					if blocks[2] != 0 {
 						third = blocks[2]
 					}
-					if fIndex%*scanSize == 0 {
+					if fIndex%*concurrentCount == 0 {
 						time.Sleep(ScanWaitSecond * time.Second)
 					}
 
