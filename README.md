@@ -1,28 +1,26 @@
 # Ivory
 
-**Ivory** is a port scanner for ip blocks.
+Ivory is a tool that can do port scanning between ip blocks dynamically.
+You can view the results as csv or send the results to your notification address.
 
-**How to build**
+#### Build
 > go build -o scanner .
 
-## Parameters
-
+#### Parameters
 parameter | required | type | default | description
 --- | --- | --- | --- |---
+ip | true | string | 192.168.* . * | ip address third block [0-255]
 port | true | integer | 9200 | scan port
 label | true | string | ElasticSearch | label
 storage | false | string | csv | storage type (notification url or csv)
 concurrent-count | false | integer | 50 | concurrent count
-first-block | false | integer | 0 | ip address first block [0-255]
-second-block | false | integer | 0 | ip address second block [0-255]
-third-block | false | integer | 0 | ip address third block [0-255]
 
-**Example**
-port scan for ElasticSearch
-> ./scanner  --port=9200 --label=elasticSearch --storage=http://localhost:8080/portscanner/create --first-block=192 --second-block=168 --third-block=1
+#### Example
 
-> ./scanner  --port=9200 --label=ElasticSearch --first-block=192 --second-block=168  --third-block=1 --storage=csv
+> ./scanner --ip=192.168.1 .* --port=9200 --label=ElasticSearch --storage=http://notification.address
 
- - The block to look at in this example is 192.168.1.[0-255].
- - The fewer blocks defined, the longer the scanning process.
+> ./scanner --ip=192.168.1 .* --port=9200 --label=ElasticSearch --storage=csv
+
+ - The octet to look at in this example is 192.168.1.[0-255].
+ - The fewer octets defined, the longer the scanning process.
  - If storage is empty writes to result.csv file, but if you give a url, it sends the request to the corresponding url with the get method.The query string contains ip, port and label parameters.

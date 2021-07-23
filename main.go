@@ -97,58 +97,69 @@ func startScan(ip string, port int, storage string, label string) {
 	}
 }
 
+func generateOctets(ip string) []int {
+	octets := make([]int, 4)
+	rawIp := strings.Split(ip, ".")
+	for index, oct := range rawIp {
+		newOct, err := strconv.Atoi(oct)
+		if err == nil {
+			// if an octet is 0, should the next ones be 0?
+			// perhaps only one octet will be searched
+			// if newOct == 0 {
+			// 	 break
+			// }
+			octets[index] = newOct
+		}
+	}
+	return octets
+}
+
 func main() {
-	blocks := []int{0, 0, 0, 0}
 
 	port := flag.Int("port", 8080, "scan port")
-	label := flag.String("label", "UnknownService", "ElasticSearch/Redis/Mongodb etc...")
+	label := flag.String("label", "UnknownService", "Redis/Mongodb etc...")
 	storage := flag.String("storage", "csv", "notification url or csv")
 	concurrentCount := flag.Int("concurrent-count", 50, "concurrent count")
-
-	firstBlock := flag.Int("first-block", 0, "ip address first block")
-	secondBlock := flag.Int("second-block", 0, "ip address second block")
-	thirdBlock := flag.Int("third-block", 0, "ip address third block")
+	ip := flag.String("ip", "192.168.*.*", "ip address")
 	flag.Parse()
+	octets := generateOctets(*ip)
 
-	blocks[0] = *firstBlock
-	blocks[1] = *secondBlock
-	blocks[2] = *thirdBlock
-	ranges := makeRange(0, 255)
-	log.Println("Search starting for", *label, "...")
-	targetBlock := fmt.Sprintf("%d.%d.%d.[0-255]:%d", blocks[0], blocks[1], blocks[2], *port)
+	log.Println("Search starting for", *label)
+	targetBlock := fmt.Sprintf("%d.%d.%d.[0-255]:%d", octets[0], octets[1], octets[2], *port)
 	log.Println("Payload: target: ", targetBlock)
-	log.Println("Storage:", *storage)
-	log.Println("Search started for", *label, "!")
+	log.Println("Storage: ", *storage)
+	log.Println("Search started for", *label)
 
+	ranges := makeRange(0, 255)
 	for _, first := range ranges {
 		for _, second := range ranges {
 			for _, third := range ranges {
 				for fIndex, fourth := range ranges {
-					if blocks[0] != 0 {
-						first = blocks[0]
+					if octets[0] != 0 {
+						first = octets[0]
 					}
-					if blocks[1] != 0 {
-						second = blocks[1]
+					if octets[1] != 0 {
+						second = octets[1]
 					}
-					if blocks[2] != 0 {
-						third = blocks[2]
+					if octets[2] != 0 {
+						third = octets[2]
 					}
 					if fIndex%*concurrentCount == 0 {
 						time.Sleep(ScanWaitSecond * time.Second)
 					}
 
 					target := fmt.Sprintf("%d.%d.%d.%d", first, second, third, fourth)
-					go startScan(target, *port, *storage, *label)
+					go startScan(target, *port, "csv", "test")
 				}
-				if blocks[2] != 0 {
+				if octets[2] != 0 {
 					break
 				}
 			}
-			if blocks[1] != 0 {
+			if octets[1] != 0 {
 				break
 			}
 		}
-		if blocks[0] != 0 {
+		if octets[0] != 0 {
 			break
 		}
 	}
